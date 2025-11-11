@@ -1,18 +1,19 @@
 using System;
+using System;
 using UnityEngine;
-
+ 
 public class SkeletonController : MonoBehaviour
 {
     [SerializeField] private float moveSpeed;
     [SerializeField] private float attackDamage;
     [SerializeField] private float minDistance;
+    [SerializeField] private float maxDistance;
     [SerializeField] private float knockbackForce;
     [SerializeField] private float knockbackDuration;
     [SerializeField] private float flashDuration;
     [SerializeField] private Material knockbackMaterial;
     [SerializeField] private Transform player;
     
-    private float _currentHealth;
     private Vector2 _playerPosition;
     private Vector2 _skeletonPosition;
     private bool _isFacingRight =  true;
@@ -30,41 +31,41 @@ public class SkeletonController : MonoBehaviour
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _mainMaterial = _spriteRenderer.material;
     }
-
     
     void Update()
     {
         _playerPosition = (player.transform.position - _rigidbody.transform.position).normalized;
         _skeletonPosition = _rigidbody.transform.position;
         _spriteDirection = Vector2.Dot(_playerPosition, _skeletonPosition.normalized);
-        
         FlipSprite();
     }
-
+ 
     private void FixedUpdate()
     {
         if (!_disableMovement)
         {
             MoveToPlayer();
-            _animator.SetBool("isMoving", true);
-        }
-        else
-        {
-            _animator.SetBool("isMoving", false);
         }
     }
-
+ 
     // Segue o jogador
     private void MoveToPlayer()
     {
-        if (Vector2.Distance(player.transform.position, _skeletonPosition) > minDistance)
+        float distance = Vector2.Distance(player.transform.position, _skeletonPosition);
+ 
+        if (distance < maxDistance && distance > minDistance)
         {
             _rigidbody.MovePosition(_skeletonPosition + _playerPosition * (moveSpeed * Time.fixedDeltaTime));
-            
+            _animator.SetBool("isMoving", true);
         }
-        
+ 
+        else if (distance < minDistance)
+        {
+            _rigidbody.MovePosition(_skeletonPosition - _playerPosition * (moveSpeed * Time.fixedDeltaTime));
+            _animator.SetBool("isMoving", true);
+        }
     }
-
+ 
     // Dá dano pro jogador
     private void OnCollisionEnter2D(Collision2D other)
     {
@@ -74,7 +75,6 @@ public class SkeletonController : MonoBehaviour
             Debug.Log("Enemy hit!!");
         }
     }
-    
     // Flipa o sprite. Dar uma mexida depois, ainda tem bugs
     private void FlipSprite()
     {
@@ -89,7 +89,6 @@ public class SkeletonController : MonoBehaviour
             _isFacingRight = true;
         }
     }
-    
     // Tudo isso controla a animação de dano e knockback. vixe
     public void KnockbackProcess()
     {
@@ -101,15 +100,12 @@ public class SkeletonController : MonoBehaviour
       _rigidbody.AddForce((knockbackDirection * knockbackForce), ForceMode2D.Impulse);
        Invoke(nameof(EndFlashDamage), flashDuration);
    }
-    
     private void StartFlashDamage()
     {
         _spriteRenderer.material = knockbackMaterial;
     }
-    
     private void EndFlashDamage()
     {
         _spriteRenderer.material = _mainMaterial;
     }
-    
 }
