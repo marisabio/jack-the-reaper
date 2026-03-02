@@ -52,16 +52,9 @@ public class SkeletonController : MonoBehaviour
     {
         float distance = Vector2.Distance(player.transform.position, _skeletonPosition);
  
-        if (distance < maxDistance && distance > minDistance)
+        if (Vector2.Distance(player.transform.position, _skeletonPosition) > minDistance)
         {
             _rigidbody.MovePosition(_skeletonPosition + _playerPosition * (moveSpeed * Time.fixedDeltaTime));
-            _animator.SetBool("isMoving", true);
-        }
- 
-        else if (distance < minDistance)
-        {
-            _rigidbody.MovePosition(_skeletonPosition - _playerPosition * (moveSpeed * Time.fixedDeltaTime));
-            _animator.SetBool("isMoving", true);
         }
     }
  

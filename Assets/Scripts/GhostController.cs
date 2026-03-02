@@ -12,38 +12,37 @@ public class GhostController : MonoBehaviour
     [SerializeField] private Material knockbackMaterial;
     [SerializeField] private Transform player;
     
-    private float _currentHealth;
-    private Vector2 _playerPosition;
-    private Vector2 _ghostPosition;
-    private bool _isFacingRight =  true;
-    private bool _disableMovement = false;
-    private float _spriteDirection;
-    private Rigidbody2D _rigidbody;
-    private Animator _animator;
-    private SpriteRenderer _spriteRenderer;
-    private Material _mainMaterial;
+    private float currentHealth;
+    private Vector2 playerPosition;
+    private Vector2 ghostPosition;
+    private bool disableMovement = false;
+    private float spriteDirection;
+    private Rigidbody2D rb;
+    private Animator animator;
+    private SpriteRenderer spriteRenderer;
+    private Material mainMaterial;
     
     void Start()
     {
-        _rigidbody = GetComponent<Rigidbody2D>();
-        _animator = GetComponent<Animator>();
-        _spriteRenderer = GetComponent<SpriteRenderer>();
-        _mainMaterial = _spriteRenderer.material;
+        rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        mainMaterial = spriteRenderer.material;
     }
 
     
     void Update()
     {
-        _playerPosition = (player.transform.position - _rigidbody.transform.position).normalized;
-        _ghostPosition = _rigidbody.transform.position;
-        _spriteDirection = Vector2.Dot(_playerPosition, _ghostPosition.normalized);
-        
+        playerPosition = (player.transform.position - rb.transform.position).normalized;
+        ghostPosition = transform.position;
+        spriteDirection = Vector2.Dot(Vector2.left, ghostPosition - (Vector2)player.transform.position);
+
         FlipSprite();
     }
 
     private void FixedUpdate()
     {
-        if (!_disableMovement)
+        if (!disableMovement)
         {
             MoveToPlayer();
         }
@@ -52,9 +51,9 @@ public class GhostController : MonoBehaviour
     // Segue o jogador
     private void MoveToPlayer()
     {
-        if (Vector2.Distance(player.transform.position, _ghostPosition) > minDistance)
+        if (Vector2.Distance(player.transform.position, ghostPosition) > minDistance)
         {
-            _rigidbody.MovePosition(_ghostPosition + _playerPosition * (moveSpeed * Time.fixedDeltaTime));
+            rb.MovePosition(ghostPosition + playerPosition * (moveSpeed * Time.fixedDeltaTime));
         }
     }
 
@@ -71,15 +70,14 @@ public class GhostController : MonoBehaviour
     // Flipa o sprite. Dar uma mexida depois, ainda tem bugs
     private void FlipSprite()
     {
-        if (_isFacingRight && _spriteDirection < 0f)
+        if (spriteDirection < 0f)
         {
             transform.rotation = Quaternion.Euler(0, 180, 0);
-            _isFacingRight = false;
+            
         }
-        else if (!_isFacingRight && _spriteDirection > 0f)
+        else if (spriteDirection > 0f)
         {
             transform.rotation = Quaternion.Euler(0, 0, 0);
-            _isFacingRight = true;
         }
     }
     
@@ -87,22 +85,22 @@ public class GhostController : MonoBehaviour
     public void KnockbackProcess()
     {
        StartFlashDamage();
-       _disableMovement = true;
-       _animator.SetBool("takingDamage", true);
-       _rigidbody.linearVelocity = Vector2.zero;
+       disableMovement = true;
+       animator.SetBool("takingDamage", true);
+       rb.linearVelocity = Vector2.zero;
       Vector2 knockbackDirection = (transform.position - player.transform.position).normalized;
-      _rigidbody.AddForce((knockbackDirection * knockbackForce), ForceMode2D.Impulse);
+      rb.AddForce((knockbackDirection * knockbackForce), ForceMode2D.Impulse);
        Invoke(nameof(EndFlashDamage), flashDuration);
    }
     
     private void StartFlashDamage()
     {
-        _spriteRenderer.material = knockbackMaterial;
+        spriteRenderer.material = knockbackMaterial;
     }
     
     private void EndFlashDamage()
     {
-        _spriteRenderer.material = _mainMaterial;
+        spriteRenderer.material = mainMaterial;
     }
     
 }
