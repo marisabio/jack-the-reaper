@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
  
 public class SkeletonController : MonoBehaviour
@@ -13,49 +12,59 @@ public class SkeletonController : MonoBehaviour
     [SerializeField] private Material knockbackMaterial;
     [SerializeField] private Transform player;
     
-    private Vector2 _playerPosition;
-    private Vector2 _skeletonPosition;
-    private bool _isFacingRight =  true;
-    private bool _disableMovement = false;
-    private float _spriteDirection;
-    private Rigidbody2D _rigidbody;
-    private Animator _animator;
-    private SpriteRenderer _spriteRenderer;
-    private Material _mainMaterial;
+    private Vector2 playerPosition;
+    private Vector2 skeletonPosition;
+    private bool disableMovement = false;
+    private float spriteDirection;
+    private Rigidbody2D rb;
+    private Animator animator;
+    private SpriteRenderer spriteRenderer;
+    private Material mainMaterial;
     
     void Start()
     {
-        _rigidbody = GetComponent<Rigidbody2D>();
-        _animator = GetComponent<Animator>();
-        _spriteRenderer = GetComponent<SpriteRenderer>();
-        _mainMaterial = _spriteRenderer.material;
+        rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        mainMaterial = spriteRenderer.material;
     }
     
     void Update()
     {
-        _playerPosition = (player.transform.position - _rigidbody.transform.position).normalized;
-        _skeletonPosition = _rigidbody.transform.position;
-        _spriteDirection = Vector2.Dot(_playerPosition, _skeletonPosition.normalized);
+        playerPosition = (player.transform.position - rb.transform.position).normalized;
+        skeletonPosition = transform.position;
+
+        // Se lembre de estudar sobre Vector2.Dot depois. Importante!!!
+        spriteDirection = Vector2.Dot(Vector2.left, skeletonPosition - (Vector2)player.transform.position);
+
         FlipSprite();
     }
  
     private void FixedUpdate()
     {
-        if (!_disableMovement)
+        if (!disableMovement)
         {
             MoveToPlayer();
+            animator.SetBool("isMoving", true);
+        }
+        else
+        {
+            animator.SetBool("isMoving", false);
         }
     }
  
     // Segue o jogador
     private void MoveToPlayer()
-    {
-        float distance = Vector2.Distance(player.transform.position, _skeletonPosition);
- 
-        if (Vector2.Distance(player.transform.position, _skeletonPosition) > minDistance)
+    { 
+        if (Vector2.Distance(player.transform.position, skeletonPosition) > minDistance)
         {
-            _rigidbody.MovePosition(_skeletonPosition + _playerPosition * (moveSpeed * Time.fixedDeltaTime));
+            rb.MovePosition(skeletonPosition + playerPosition * (moveSpeed * Time.fixedDeltaTime));
         }
+        else if (Vector2.Distance(player.transform.position, skeletonPosition) < minDistance)
+        {
+            rb.MovePosition(skeletonPosition - playerPosition * (moveSpeed * Time.fixedDeltaTime));
+        }
+
     }
  
     // Dá dano pro jogador
@@ -67,37 +76,39 @@ public class SkeletonController : MonoBehaviour
             Debug.Log("Enemy hit!!");
         }
     }
-    // Flipa o sprite. Dar uma mexida depois, ainda tem bugs
+
+    // Flipa o sprite
     private void FlipSprite()
     {
-        if (_isFacingRight && _spriteDirection < 0f)
+        if (spriteDirection < 0f)
         {
             transform.rotation = Quaternion.Euler(0, 180, 0);
-            _isFacingRight = false;
         }
-        else if (!_isFacingRight && _spriteDirection > 0f)
+        else if (spriteDirection > 0f)
         {
             transform.rotation = Quaternion.Euler(0, 0, 0);
-            _isFacingRight = true;
         }
     }
+
     // Tudo isso controla a animação de dano e knockback. vixe
     public void KnockbackProcess()
     {
-       StartFlashDamage();
-       _disableMovement = true;
-       _animator.SetBool("takingDamage", true);
-       _rigidbody.linearVelocity = Vector2.zero;
-      Vector2 knockbackDirection = (transform.position - player.transform.position).normalized;
-      _rigidbody.AddForce((knockbackDirection * knockbackForce), ForceMode2D.Impulse);
-       Invoke(nameof(EndFlashDamage), flashDuration);
-   }
+        StartFlashDamage();
+        disableMovement = true;
+        animator.SetBool("takingDamage", true);
+        rb.linearVelocity = Vector2.zero;
+        Vector2 knockbackDirection = (transform.position - player.transform.position).normalized;
+        rb.AddForce((knockbackDirection * knockbackForce), ForceMode2D.Impulse);
+        Invoke(nameof(EndFlashDamage), flashDuration);
+    }
+
     private void StartFlashDamage()
     {
-        _spriteRenderer.material = knockbackMaterial;
+        spriteRenderer.material = knockbackMaterial;
     }
+
     private void EndFlashDamage()
     {
-        _spriteRenderer.material = _mainMaterial;
+        spriteRenderer.material = mainMaterial;
     }
 }

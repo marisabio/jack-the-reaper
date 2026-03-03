@@ -6,11 +6,11 @@ public class TextEffect : MonoBehaviour
 {
     [SerializeField] private float textSpeed;
     [TextArea] public string insertText;
-    private TMP_Text _displayText;
+    private TMP_Text displayText;
 
     void Start()
     {
-        _displayText = GetComponent<TMP_Text>();
+        displayText = GetComponent<TMP_Text>();
         
         StartCoroutine(TypingEffect(insertText));
     }
@@ -21,7 +21,7 @@ public class TextEffect : MonoBehaviour
         foreach (char c in text)
         {
             textBuffer += c;
-            _displayText.text = textBuffer;
+            displayText.text = textBuffer;
             yield return new WaitForSeconds(1/textSpeed);
         }
     }

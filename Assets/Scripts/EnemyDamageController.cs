@@ -7,20 +7,20 @@ public class EnemyDamageController : MonoBehaviour
     [SerializeField] private float maxHealth;
     [SerializeField] private float deathTime;
     public UnityEvent onTakeDamage;
-    private float _currentHealth;
+    private float currentHealth;
     
     void Start()
     {
-        _currentHealth = maxHealth;
+        currentHealth = maxHealth;
     }
 
     public void TakeDamage(float damage)
     {
-        _currentHealth -= damage;
+        currentHealth -= damage;
         
         onTakeDamage.Invoke();
         
-        if (_currentHealth <= 0)
+        if (currentHealth <= 0)
         {
             Invoke(nameof(Die), deathTime);
         }

@@ -12,7 +12,6 @@ public class GhostController : MonoBehaviour
     [SerializeField] private Material knockbackMaterial;
     [SerializeField] private Transform player;
     
-    private float currentHealth;
     private Vector2 playerPosition;
     private Vector2 ghostPosition;
     private bool disableMovement = false;
@@ -35,6 +34,8 @@ public class GhostController : MonoBehaviour
     {
         playerPosition = (player.transform.position - rb.transform.position).normalized;
         ghostPosition = transform.position;
+
+        // Se lembre de estudar sobre Vector2.Dot depois. Importante!!!
         spriteDirection = Vector2.Dot(Vector2.left, ghostPosition - (Vector2)player.transform.position);
 
         FlipSprite();
@@ -67,7 +68,7 @@ public class GhostController : MonoBehaviour
         }
     }
     
-    // Flipa o sprite. Dar uma mexida depois, ainda tem bugs
+    // Flipa o sprite
     private void FlipSprite()
     {
         if (spriteDirection < 0f)
@@ -84,14 +85,14 @@ public class GhostController : MonoBehaviour
     // Tudo isso controla a animação de dano e knockback. vixe
     public void KnockbackProcess()
     {
-       StartFlashDamage();
-       disableMovement = true;
-       animator.SetBool("takingDamage", true);
-       rb.linearVelocity = Vector2.zero;
-      Vector2 knockbackDirection = (transform.position - player.transform.position).normalized;
-      rb.AddForce((knockbackDirection * knockbackForce), ForceMode2D.Impulse);
-       Invoke(nameof(EndFlashDamage), flashDuration);
-   }
+        StartFlashDamage();
+        disableMovement = true;
+        animator.SetBool("takingDamage", true);
+        rb.linearVelocity = Vector2.zero;
+        Vector2 knockbackDirection = (transform.position - player.transform.position).normalized;
+        rb.AddForce((knockbackDirection * knockbackForce), ForceMode2D.Impulse);
+        Invoke(nameof(EndFlashDamage), flashDuration);
+    }
     
     private void StartFlashDamage()
     {
