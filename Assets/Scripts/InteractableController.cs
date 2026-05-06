@@ -9,6 +9,5 @@ public class InteractableController : MonoBehaviour
     {
         onInteract.Invoke();
     }
-    
-    
+  
 }
